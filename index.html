@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision Analysis Lab</title>
+
+<style>
+:root {
+  --bg: #f5f7fb;
+  --panel: #fff;
+  --ink: #172033;
+  --muted: #65718a;
+  --line: #d7dfeb;
+  --accent: #315ee7;
+  --soft: #edf2ff;
+  --good: #16734f;
+  --bad: #b42318;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 system-ui, Arial, sans-serif;
+}
+
+header {
+  background: linear-gradient(120deg, #14264d, #315ee7);
+  color: white;
+  padding: 34px 20px;
+}
+
+header .wrap, main {
+  max-width: 1240px;
+  margin: auto;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  margin: 0 0 9px;
+}
+
+header p { color: #e3eaff; }
+
+main { padding: 22px 16px 55px; }
+
+.panel {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  padding: 19px;
+  margin-bottom: 17px;
+}
+
+h2 { font-size: 1.2rem; }
+
+.muted, .hint { color: var(--muted); }
+
+.hint { font-size: .9rem; }
+
+.examples {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.example {
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 11px;
+  padding: 13px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.example.active {
+  border-color: var(--accent);
+  background: var(--soft);
+}
+
+.example strong { display: block; }
+
+.example span {
+  font-size: .87rem;
+  color: var(--muted);
+}
+
+.toolbar, .controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 14px 0;
+}
+
+input, button { font: inherit; }
+
+input[type=text], input[type=number] {
+  border: 1px solid #b9c7dc;
+  border-radius: 7px;
+  padding: 9px 10px;
+  color: var(--ink);
+  background: white;
+  min-width: 0;
+}
+
+input:focus {
+  outline: 2px solid #8eb1ff;
+  outline-offset: 1px;
+}
+
+.name-input {
+  width: 145px;
+  font-weight: 650;
+}
+
+.prob-input, .pay-input {
+  width: 100%;
+  max-width: 140px;
+}
+
+button {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 8px 12px;
+  border: 1px solid #bdcbe0;
+  background: white;
+  color: var(--ink);
+}
+
+button:hover {
+  border-color: var(--accent);
+  background: var(--soft);
+}
+
+button.primary {
+  background: var(--accent);
+  color: white;
+  font-weight: 700;
+}
+
+button.danger { color: #a32626; }
+
+.table-wrap {
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 760px;
+}
+
+th, td {
+  padding: 10px 11px;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  vertical-align: top;
+  text-align: left;
+}
+
+th { background: #f5f7fa; }
+
+.head-actions, .state-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.head-actions button, .state-actions button {
+  font-size: .83rem;
+  padding: 5px 8px;
+}
+
+.prob-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.status {
+  padding: 11px 13px;
+  background: #f4f7fb;
+  border-left: 3px solid var(--accent);
+  margin-top: 12px;
+}
+
+.status.error {
+  border-color: var(--bad);
+  color: var(--bad);
+}
+
+.status.ok { border-color: var(--good); }
+
+.results {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.result {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.result .name { font-weight: 700; }
+
+.winner {
+  font-weight: 700;
+  color: var(--good);
+}
+
+.score {
+  font-size: 1.2rem;
+  font-weight: 750;
+}
+
+.flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.step {
+  background: #f0f4fb;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 9px 11px;
+  font-weight: 650;
+}
+
+.arrow {
+  color: var(--accent);
+  font-size: 1.2rem;
+}
+
+details {
+  border-top: 1px solid var(--line);
+  padding: 11px 0;
+}
+
+summary {
+  font-weight: 700;
+  cursor: pointer;
+}
+
+footer {
+  text-align: center;
+  color: var(--muted);
+  padding: 18px;
+}
+
+@media(max-width:600px) {
+  .panel { padding: 14px; }
+  header { padding: 27px 17px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="wrap">
+<h1>Decision Analysis Lab</h1>
+<p>
+Build or load a decision problem, edit its payoff matrix
+and state probabilities, and compare six decision criteria.
+All calculations update as you work.
+</p>
+</div>
+</header>
+
+<main>
+
+<section class="panel">
+<h2>1. Select a preloaded problem or start your own</h2>
+
+<div class="examples" id="examples"></div>
+
+<div class="toolbar">
+<button class="primary" id="newProblem">
+＋ New custom problem
+</button>
+
+<button id="resetCase">Reset selected example</button>
+</div>
+
+<div class="controls">
+<label for="alpha">
+Hurwicz optimism (α):
+<output id="alphaOut">0.60</output>
+</label>
+
+<input id="alpha" type="range"
+min="0" max="1" step="0.05" value="0.60">
+
+<label>
+<input id="filter" type="checkbox" checked>
+Apply staged filtering (remove dominated alternatives)
+</label>
+</div>
+
+<p class="hint">
+Probabilities can be entered as decimals (0.25),
+percentages (25%), or decimal commas (0,25).
+They must add up to 1.
+</p>
+</section>
+
+<section class="panel">
+<h2>2. Payoff table</h2>
+
+<div class="toolbar">
+<label for="unit">Payoff unit</label>
+<input id="unit" type="text" value="points" style="width:190px">
+
+<button id="addAlternative">＋ Add alternative</button>
+<button id="addState">＋ Add state</button>
+<button id="transpose">Transpose table</button>
+</div>
+
+<p id="description" class="muted"></p>
+
+<div class="table-wrap" id="matrix"></div>
+
+<div id="validation" class="status"></div>
+
+<p class="hint">
+Edit any name, probability, or payoff cell.
+Use the remove buttons to change the number of states
+or alternatives. At least two states and two alternatives
+are required.
+</p>
+</section>
+
+<section class="panel">
+<h2>3. Staged filtering</h2>
+
+<div class="flow" id="filterFlow"></div>
+
+<div id="filterExplanation" class="status"></div>
+
+<p class="hint">
+An alternative is dominated if another alternative gives
+an equal or higher payoff in every state and a strictly
+higher payoff in at least one state.
+</p>
+</section>
+
+<section class="panel">
+<h2>4. Decision criteria</h2>
+
+<div class="results" id="results"></div>
+
+<h3>Detailed scores</h3>
+<div class="table-wrap" id="scores"></div>
+
+<h3>Regret table</h3>
+<div class="table-wrap" id="regrets"></div>
+</section>
+
+<section class="panel">
+<h2>5. Decision flow diagram</h2>
+
+<div class="flow">
+<div class="step">Select / build problem</div>
+<span class="arrow">→</span>
+<div class="step">Enter payoffs + probabilities</div>
+<span class="arrow">→</span>
+<div class="step">Validate inputs</div>
+<span class="arrow">→</span>
+<div class="step">Filter dominated options</div>
+<span class="arrow">→</span>
+<div class="step">Calculate six criteria</div>
+<span class="arrow">→</span>
+<div class="step">Compare recommendations</div>
+</div>
+</section>
+
+<section class="panel">
+<h2>How to verify the calculations</h2>
+
+<details>
+<summary>Maximax and Maximin</summary>
+<p><b>Maximax:</b> choose the alternative with the largest
+single payoff.</p>
+<p><b>Maximin:</b> choose the alternative whose worst
+payoff is the highest.</p>
+</details>
+
+<details>
+<summary>Minimax regret</summary>
+<p>
+Subtract each alternative's payoff from the best payoff
+in that state. Choose the alternative with the smallest
+maximum regret.
+</p>
+</details>
+
+<details>
+<summary>Laplace and EMV</summary>
+<p><b>Laplace:</b> average the payoffs assuming equal
+probabilities.</p>
+<p><b>EMV:</b> multiply each payoff by its state's
+probability and add the results.</p>
+</details>
+
+<details>
+<summary>Hurwicz</summary>
+<p>
+α × best payoff + (1 − α) × worst payoff.
+</p>
+</details>
+</section>
+
+</main>
+
+<footer>
+Decision Analysis Lab · GitHub Pages compatible
+</footer>
+
+<script>
+
+const templates = [
+{
+id:"launch",
+title:"Example 1 — Product launch",
+subtitle:"Demand uncertainty · thousand USD",
+description:"Choose a launch strategy when demand may be low, medium, or high.",
+unit:"thousand USD",
+states:[
+["Low demand",.30],
+["Medium demand",.40],
+["High demand",.30]
+],
+alts:[
+["Cautious launch",[40,55,65]],
+["Balanced launch",[20,70,100]],
+["Bold launch",[-30,45,150]],
+["Outdated plan",[10,40,50]]
+]
+},
+{
+id:"farm",
+title:"Example 2 — Farm irrigation",
+subtitle:"Season uncertainty · payoff points",
+description:"Compare irrigation systems under dry, normal, and wet seasons.",
+unit:"points",
+states:[
+["Dry season",.40],
+["Normal season",.40],
+["Wet season",.20]
+],
+alts:[
+["Drip system",[90,80,55]],
+["Sprinkler system",[55,85,70]],
+["Flood irrigation",[30,60,75]],
+["Old channel plan",[20,40,45]]
+]
+}
+];
+
+let problem;
+let selected="launch";
+let transposed=false;
+
+const $ = id => document.getElementById(id);
+
+function loadTemplate(id) {
+const t=JSON.parse(JSON.stringify(
+templates.find(x=>x.id===id)
+));
+
+selected=id;
+
+problem={
+title:t.title,
+description:t.description,
+unit:t.unit,
+states:t.states.map(s=>({
+name:s[0],
+prob:String(s[1])
+})),
+alts:t.alts.map(a=>({
+name:a[0],
+payoffs:a[1].map(String)
+}))
+};
+
+transposed=false;
+renderAll();
+}
+
+function newCustom() {
+selected="custom";
+
+problem={
+title:"Custom decision problem",
+description:"Edit the states, probabilities, alternatives, and payoffs to define your own problem.",
+unit:"points",
+states:[
+{name:"S1",prob:"0.5"},
+{name:"S2",prob:"0.5"}
+],
+alts:[
+{name:"A1",payoffs:["10","5"]},
+{name:"A2",payoffs:["6","9"]}
+]
+};
+
+transposed=false;
+renderAll();
+}
+
+function renderExamples() {
+$("examples").innerHTML=templates.map(t=>`
+<button class="example ${selected===t.id?"active":""}"
+data-id="${t.id}">
+<strong>${t.title}</strong>
+<span>${t.subtitle}</span>
+</button>
+`).join("");
+
+document.querySelectorAll(".example").forEach(b=>{
+b.onclick=()=>loadTemplate(b.dataset.id);
+});
+}
+
+function parseNum(v) {
+v=String(v).trim().replace(",", ".");
+
+if(v.endsWith("%")) {
+const n=Number(v.slice(0,-1));
+return Number.isFinite(n)?n/100:NaN;
+}
+
+return v===""?NaN:Number(v);
+}
+
+function fmt(n) {
+return Number(n).toFixed(2).replace(/\.00$/,"");
+}
+
+function escapeHTML(s) {
+return String(s).replace(/[&<>"']/g,c=>({
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#39;"
+}[c]));
+}
+
+function matrixHTML() {
+
+const ns=problem.states.length;
+const na=problem.alts.length;
+
+let head=`
+<tr>
+<th>State</th>
+<th>Probability</th>
+
+${problem.alts.map((a,j)=>`
+<th>
+<div class="head-actions">
+<input class="name-input"
+data-kind="altname"
+data-index="${j}"
+value="${escapeHTML(a.name)}">
+
+<button class="danger"
+data-action="removeAlt"
+data-index="${j}"
+${na<=2?"disabled":""}>
+Remove alternative
+</button>
+</div>
+</th>
+`).join("")}
+
+</tr>
+`;
+
+let body=problem.states.map((s,i)=>`
+<tr>
+
+<td>
+<div class="state-actions">
+
+<input class="name-input"
+data-kind="statename"
+data-index="${i}"
+value="${escapeHTML(s.name)}">
+
+<button class="danger"
+data-action="removeState"
+data-index="${i}"
+${ns<=2?"disabled":""}>
+Remove state
+</button>
+
+</div>
+</td>
+
+<td>
+<input class="prob-input"
+data-kind="prob"
+data-index="${i}"
+value="${escapeHTML(s.prob)}">
+</td>
+
+${problem.alts.map((a,j)=>`
+<td>
+<input class="pay-input"
+data-kind="payoff"
+data-state="${i}"
+data-index="${j}"
+value="${escapeHTML(a.payoffs[i]??"")}">
+</td>
+`).join("")}
+
+</tr>
+`).join("");
+
+if(!transposed) {
+return `
+<table>
+<thead>${head}</thead>
+<tbody>${body}</tbody>
+</table>
+`;
+}
+
+return `
+<table>
+<thead>
+<tr>
+<th>Alternative</th>
+${problem.states.map(s=>`
+<th>${escapeHTML(s.name)}
+<br>Probability: ${escapeHTML(s.prob)}
+</th>
+`).join("")}
+</tr>
+</thead>
+<tbody>
+${problem.alts.map(a=>`
+<tr>
+<td>${escapeHTML(a.name)}</td>
+${a.payoffs.map(x=>`<td>${escapeHTML(x)}</td>`).join("")}
+</tr>
+`).join("")}
+</tbody>
+</table>
+<p>Transpose is a display-only view.</p>
+`;
+}
+
+function readData() {
+
+const probs=problem.states.map(s=>parseNum(s.prob));
+
+const pay=problem.alts.map(a=>
+a.payoffs.map(parseNum)
+);
+
+const probValid=
+probs.every(x=>
+Number.isFinite(x)&&x>=0&&x<=1
+)&&
+Math.abs(probs.reduce((s,x)=>s+x,0)-1)<1e-9;
+
+const payValid=pay.every(row=>
+row.length===problem.states.length&&
+row.every(Number.isFinite)
+);
+
+return {
+probs,
+pay,
+probValid,
+payValid,
+probTotal:probs.every(Number.isFinite)
+?probs.reduce((s,x)=>s+x,0):NaN
+};
+}
+
+function winners(map,mode) {
+
+const vals=Object.values(map);
+
+if(!vals.length)return[];
+
+const target=mode==="min"
+?Math.min(...vals)
+:Math.max(...vals);
+
+return Object.keys(map).filter(k=>
+Math.abs(map[k]-target)<1e-9
+);
+}
+
+function calculate() {
+
+const {
+probs,pay,probValid,payValid
+}=readData();
+
+const alpha=Number($("alpha").value);
+
+const names=problem.alts.map(a=>
+a.name.trim()||"Unnamed alternative"
+);
+
+const dominated=new Set();
+
+if(payValid) {
+pay.forEach((a,i)=>{
+pay.forEach((b,j)=>{
+if(i!==j &&
+b.every((v,k)=>v>=a[k]) &&
+b.some((v,k)=>v>a[k])) {
+dominated.add(i);
+}
+});
+});
+}
+
+const filter=$("filter").checked;
+
+const eligible=problem.alts
+.map((_,i)=>i)
+.filter(i=>!filter||!dominated.has(i));
+
+const score=pay.map(row=>{
+
+if(!payValid)return null;
+
+const best=Math.max(...row);
+const worst=Math.min(...row);
+
+return {
+maximax:best,
+maximin:worst,
+laplace:row.reduce((s,x)=>s+x,0)/row.length,
+hurwicz:alpha*best+(1-alpha)*worst,
+emv:probValid
+?row.reduce((s,x,j)=>s+x*probs[j],0)
+:NaN
+};
+});
+
+const regret=payValid
+?pay.map(row=>row.map((x,j)=>
+Math.max(...pay.map(r=>r[j]))-x
+))
+:[];
+
+const maxRegret=regret.map(r=>Math.max(...r));
+
+const criteria=[
+["Maximax","maximax","max"],
+["Maximin","maximin","max"],
+["Minimax regret","maxRegret","min"],
+["Laplace","laplace","max"],
+["Hurwicz","hurwicz","max"],
+["Expected monetary value (EMV)","emv","max"]
+];
+
+const picks={};
+
+criteria.forEach(([label,key,mode])=>{
+
+if(payValid && (key!=="emv"||probValid)) {
+
+const map=Object.fromEntries(
+eligible.map(i=>[
+names[i],
+key==="maxRegret"
+?maxRegret[i]
+:score[i][key]
+])
+);
+
+picks[label]=winners(map,mode);
+}
+
+});
+
+return {
+probs,pay,probValid,payValid,
+dominated,eligible,filter,
+score,regret,maxRegret,picks,
+criteria,names
+};
+}
+
+function renderAnalysis() {
+
+const a=calculate();
+
+const probTotal=a.probs.every(Number.isFinite)
+?a.probs.reduce((s,x)=>s+x,0):NaN;
+
+$("validation").textContent=
+`Probability total: ${Number.isFinite(probTotal)?fmt(probTotal):"incomplete"}. `+
+(a.probValid?"Valid probabilities.":"Correct probabilities so they total 1.")+
+(a.payValid?" All payoff cells are valid.":" Complete every payoff cell.");
+
+$("validation").className=
+"status "+(a.probValid&&a.payValid?"ok":"error");
+
+$("filterFlow").innerHTML=`
+<div class="step">All ${problem.alts.length} alternatives</div>
+<span class="arrow">→</span>
+<div class="step">Dominance filter ${a.filter?"ON":"OFF"}</div>
+<span class="arrow">→</span>
+<div class="step">${a.eligible.length} alternatives evaluated</div>
+`;
+
+const removed=[...a.dominated].map(i=>a.names[i]);
+
+$("filterExplanation").textContent=a.filter
+?(removed.length
+?`Filtered out: ${removed.join(", ")}. Remaining: ${a.eligible.map(i=>a.names[i]).join(", ")}.`
+:"No dominated alternatives found. All alternatives remain.")
+:"Filtering is off. Every alternative is included.";
+
+$("results").innerHTML=a.criteria.map(
+([label,key,mode])=>{
+
+const w=a.picks[label];
+
+if(!w) {
+return `
+<div class="result">
+<div class="name">${label}</div>
+<div class="muted">Complete valid inputs to calculate.</div>
+</div>
+`;
+}
+
+const idx=a.names.indexOf(w[0]);
+
+const v=key==="maxRegret"
+?a.maxRegret[idx]
+:a.score[idx][key];
+
+return `
+<div class="result">
+<div class="name">${label}</div>
+<div class="winner">${w.map(escapeHTML).join(" · ")}</div>
+<div class="score">${fmt(v)} ${escapeHTML(problem.unit)}</div>
+</div>
+`;
+}
+).join("");
+
+$("scores").innerHTML=`
+<table>
+<thead>
+<tr>
+<th>Alternative</th>
+<th>Maximax</th>
+<th>Maximin</th>
+<th>Max regret</th>
+<th>Laplace</th>
+<th>Hurwicz</th>
+<th>EMV</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+
+${problem.alts.map((alt,i)=>{
+
+const s=a.score[i];
+
+return `
+<tr>
+<td>${escapeHTML(a.names[i])}</td>
+
+${s?`
+<td>${fmt(s.maximax)}</td>
+<td>${fmt(s.maximin)}</td>
+<td>${fmt(a.maxRegret[i])}</td>
+<td>${fmt(s.laplace)}</td>
+<td>${fmt(s.hurwicz)}</td>
+<td>${a.probValid?fmt(s.emv):"—"}</td>
+`:`<td colspan="6">Complete payoff table</td>`}
+
+<td>${a.filter&&a.dominated.has(i)
+?"Filtered out":"Evaluated"}</td>
+
+</tr>
+`;
+
+}).join("")}
+
+</tbody>
+</table>
+`;
+
+$("regrets").innerHTML=a.payValid?`
+<table>
+<thead>
+<tr>
+<th>Alternative</th>
+${problem.states.map(s=>
+`<th>${escapeHTML(s.name)} regret</th>`
+).join("")}
+<th>Maximum regret</th>
+</tr>
+</thead>
+
+<tbody>
+${a.regret.map((r,i)=>`
+<tr>
+<td>${escapeHTML(a.names[i])}</td>
+${r.map(x=>`<td>${fmt(x)}</td>`).join("")}
+<td><b>${fmt(a.maxRegret[i])}</b></td>
+</tr>
+`).join("")}
+</tbody>
+</table>
+`:"Complete all payoff cells to calculate regret.";
+}
+
+function renderAll() {
+
+renderExamples();
+
+$("unit").value=problem.unit;
+$("description").textContent=problem.description;
+
+$("matrix").innerHTML=matrixHTML();
+
+$("alphaOut").textContent=
+Number($("alpha").value).toFixed(2);
+
+renderAnalysis();
+}
+
+function updateCell(el) {
+
+const i=Number(el.dataset.index);
+const kind=el.dataset.kind;
+
+if(kind==="statename")
+problem.states[i].name=el.value;
+
+if(kind==="prob")
+problem.states[i].prob=el.value;
+
+if(kind==="altname")
+problem.alts[i].name=el.value;
+
+if(kind==="payoff")
+problem.alts[i].payoffs[
+Number(el.dataset.state)
+]=el.value;
+
+renderAnalysis();
+}
+
+$("matrix").addEventListener("input",e=>{
+
+const el=e.target;
+
+if(el.matches("[data-kind]"))
+updateCell(el);
+
+});
+
+$("matrix").addEventListener("click",e=>{
+
+const b=e.target.closest("[data-action]");
+
+if(!b)return;
+
+const i=Number(b.dataset.index);
+
+if(b.dataset.action==="removeState" &&
+problem.states.length>2) {
+
+problem.states.splice(i,1);
+
+problem.alts.forEach(a=>
+a.payoffs.splice(i,1)
+);
+
+}
+
+if(b.dataset.action==="removeAlt" &&
+problem.alts.length>2) {
+
+problem.alts.splice(i,1);
+
+}
+
+renderAll();
+
+});
+
+$("addState").onclick=()=>{
+
+const n=problem.states.length+1;
+
+problem.states.push({
+name:"S"+n,
+prob:""
+});
+
+problem.alts.forEach(a=>
+a.payoffs.push("")
+);
+
+renderAll();
+
+};
+
+$("addAlternative").onclick=()=>{
+
+const n=problem.alts.length+1;
+
+problem.alts.push({
+name:"A"+n,
+payoffs:problem.states.map(()=>"")
+});
+
+renderAll();
+
+};
+
+$("transpose").onclick=()=>{
+
+transposed=!transposed;
+
+renderAll();
+
+$("transpose").textContent=
+transposed?"Show editable table":"Transpose table";
+
+};
+
+$("newProblem").onclick=newCustom;
+
+$("resetCase").onclick=()=>
+selected==="custom"
+?newCustom()
+:loadTemplate(selected);
+
+$("unit").addEventListener("input",e=>{
+problem.unit=e.target.value;
+renderAnalysis();
+});
+
+$("alpha").addEventListener("input",()=>{
+$("alphaOut").textContent=
+Number($("alpha").value).toFixed(2);
+renderAnalysis();
+});
+
+$("filter").addEventListener("change",renderAnalysis);
+
+loadTemplate("launch");
+
+</script>
+</body>
+</html>"# C10-global-economics" 
+"# C10-global-economics" 
+"# C10-global-economics" 
